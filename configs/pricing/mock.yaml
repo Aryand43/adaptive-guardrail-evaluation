@@ -1,0 +1,10 @@
+# Pricing for the offline mock models. Non-zero so cost accounting is exercised end to end.
+schema_version: "1.0"
+version: "mock-2026-01"
+effective_date: "2026-01-01"
+currency: USD
+models:
+  "mock:mock-attacker:1": {input_per_mtok: "0.15", output_per_mtok: "0.60"}
+  "mock:mock-target:1": {input_per_mtok: "0.10", output_per_mtok: "0.40"}
+  "mock:mock-target-strong:1": {input_per_mtok: "2.50", output_per_mtok: "10.00"}
+  "mock:mock-judge:1": {input_per_mtok: "0.15", output_per_mtok: "0.60"}

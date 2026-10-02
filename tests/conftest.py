@@ -22,6 +22,7 @@ from storage.manifest import (
 from storage.provenance import CodeInfo
 
 H = sha256_text  # shorthand: deterministic placeholder hashes
+ROOT = Path(__file__).resolve().parent.parent
 
 
 @pytest.fixture
