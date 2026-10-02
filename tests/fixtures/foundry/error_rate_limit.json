@@ -1,0 +1,2 @@
+{"status": 429, "headers": {"retry-after": "4"},
+ "body": {"error": {"code": "429", "message": "SANITIZED: rate limit exceeded."}}}

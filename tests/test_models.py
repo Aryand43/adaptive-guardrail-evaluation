@@ -59,7 +59,7 @@ def test_mock_attacker_escalates_from_feedback():
     first = a.complete(req("no feedback yet", role=Role.ATTACKER)).text
     assert "[[mock:pressure=1]]" in first
     after_refusal = a.complete(
-        req("FEEDBACK: turn=1 refused=1 progress=0.00 pressure=1", role=Role.ATTACKER)
+        req("[[mock:pressure=1]] X\nFEEDBACK: turn=1 refused=1 progress=0.0", role=Role.ATTACKER)
     ).text
     assert "[[mock:pressure=3]]" in after_refusal
 

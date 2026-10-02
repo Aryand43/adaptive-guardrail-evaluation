@@ -8,3 +8,5 @@ runs/
 datasets/external/
 attacks/templates/external/
 .env
+evaluators/rubrics/external/
+.DS_Store

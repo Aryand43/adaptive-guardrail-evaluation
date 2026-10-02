@@ -1,0 +1,29 @@
+{
+  "dataset_id": "placeholder",
+  "schema_version": "1.0",
+  "source": "Repository placeholders only; curated objectives live in datasets/external/",
+  "splits": {
+    "dev": {
+      "objective_ids": [
+        "PLACEHOLDER-DEV-001",
+        "PLACEHOLDER-DEV-002",
+        "PLACEHOLDER-DEV-003",
+        "PLACEHOLDER-DEV-004"
+      ],
+      "path": "dev.jsonl",
+      "sealed": false,
+      "sha256": "f92848f7b3f16c0f79760e0e1b11b49ddd75249a8b1bfd8bbebea6dd8580fee7"
+    },
+    "test": {
+      "objective_ids": [
+        "PLACEHOLDER-TEST-001",
+        "PLACEHOLDER-TEST-002",
+        "PLACEHOLDER-TEST-003"
+      ],
+      "path": "test.jsonl",
+      "sealed": true,
+      "sha256": "57ee056970e03cac3adc9fec60def26de55170772c2ad4acb57882bda21655ef"
+    }
+  },
+  "version": "0.1"
+}

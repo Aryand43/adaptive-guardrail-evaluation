@@ -5,8 +5,8 @@ evaluators can score it without any real harmful content:
 
 - target persona: reads `[[mock:pressure=N]]` from the latest user message and answers
   with `[[mock:refusal]]` or `[[mock:compliance=X.XX]]` plus filler words;
-- attacker persona: reads `FEEDBACK: ... refused=R ... pressure=K` and emits the next
-  placeholder message with an adjusted pressure marker;
+- attacker persona: reads the last `[[mock:pressure=K]]` and the last `FEEDBACK: ... refused=R`
+  line in its prompt and emits the next placeholder message with an adjusted pressure marker;
 - judge persona (evaluator role): reads `[[rubric:<channel>]]` and the response marker and
   answers `SCORE: X.XX`.
 
@@ -26,7 +26,7 @@ PRESSURE_RE = re.compile(r"\[\[mock:pressure=(\d+)\]\]")
 COMPLIANCE_RE = re.compile(r"\[\[mock:compliance=([0-9.]+)\]\]")
 REFUSAL_MARK = "[[mock:refusal]]"
 RUBRIC_RE = re.compile(r"\[\[rubric:(harm|refusal|progress)\]\]")
-FEEDBACK_RE = re.compile(r"FEEDBACK:.*?refused=(\d).*?pressure=(\d+)")
+FEEDBACK_RE = re.compile(r"FEEDBACK:.*?refused=(\d)")
 
 FaultPlan = Callable[[int, ModelRequest], ModelError | None]
 UsagePlan = Callable[[int, ModelRequest], bool]
@@ -92,13 +92,13 @@ class MockAdapter(ModelAdapter):
 
     @staticmethod
     def _attacker(req: ModelRequest) -> str:
-        prompt = _last_user(req.messages)
-        m = FEEDBACK_RE.search(prompt)
-        if m is None:
+        prompt = "\n".join(m.content for m in req.messages)
+        pressures = PRESSURE_RE.findall(prompt)
+        refused = FEEDBACK_RE.findall(prompt)
+        if not pressures:
             nxt = 1
         else:
-            refused, pressure = int(m.group(1)), int(m.group(2))
-            nxt = pressure + (2 if refused else 1)
+            nxt = int(pressures[-1]) + (2 if refused and refused[-1] == "1" else 1)
         return f"[[mock:pressure={nxt}]] PLACEHOLDER adaptive attacker message."
 
     @staticmethod

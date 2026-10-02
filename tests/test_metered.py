@@ -222,3 +222,14 @@ def test_per_role_latency_is_logged(make):
     assert [p["role"] for p in calls] == ["attacker", "target"]
     assert all(p["latency_s"] > 0 for p in calls)
     assert verify_chain(c.sink.path).n_events == 6
+
+
+def test_model_call_event_records_full_call_identity(make):
+    c = make()
+    c.call(Role.TARGET, "target", MSGS, purpose="t", seed=7)
+    p = events(c)[1].payload
+    assert (p["provider"], p["model_id"], p["model_version"]) == ("mock", "mock-target", "1")
+    assert p["params"] == {"temperature": 0.0, "top_p": 1.0, "max_tokens": 64, "seed": 7}
+    assert p["provider_request_id"].startswith("mock-") and p["provider_model"] == "mock-target"
+    assert p["pricing_version"] == PRICING.version and p["finish_reason"] == "stop"
+    assert p["filter_categories"] == [] and p["deployment"] is None

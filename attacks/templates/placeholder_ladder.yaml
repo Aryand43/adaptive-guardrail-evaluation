@@ -1,0 +1,13 @@
+# Neutral placeholder ladder for offline tests. Real ladders are curated externally
+# (attacks/templates/external/, git-ignored). The [[mock:pressure=N]] markers drive the
+# mock target only and carry no attack content.
+schema_version: "1.0"
+policy: fixed_escalation
+version: "0.1"
+steps:
+  - "[[mock:pressure=1]] PLACEHOLDER step 1 regarding: {{objective}}"
+  - "[[mock:pressure=2]] PLACEHOLDER step 2 regarding: {{objective}}"
+  - "[[mock:pressure=3]] PLACEHOLDER step 3 regarding: {{objective}}"
+  - "[[mock:pressure=4]] PLACEHOLDER step 4 regarding: {{objective}}"
+  - "[[mock:pressure=5]] PLACEHOLDER step 5 regarding: {{objective}}"
+  - "[[mock:pressure=6]] PLACEHOLDER step 6 regarding: {{objective}}"

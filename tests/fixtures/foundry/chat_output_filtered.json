@@ -1,0 +1,5 @@
+{"status": 200, "headers": {},
+ "body": {"id": "chatcmpl-SANITIZED0004", "object": "chat.completion", "model": "gpt-4o-2024-11-20",
+  "choices": [{"index": 0, "finish_reason": "content_filter", "message": {"role": "assistant", "content": null},
+    "content_filter_results": {"hate": {"filtered": false, "severity": "safe"}, "violence": {"filtered": true, "severity": "high"}}}],
+  "usage": {"prompt_tokens": 30, "completion_tokens": 0, "total_tokens": 30}}}

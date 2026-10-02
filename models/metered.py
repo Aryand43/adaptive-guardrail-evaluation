@@ -135,6 +135,8 @@ class MeteredClient:
             return f"no adapter for provider {spec.provider!r} (model {name})"
         if not self._pricing.has(spec.pricing_key):
             return f"no pricing for {spec.pricing_key} (model {name})"
+        if problem := self._adapters[spec.provider].check(spec):
+            return f"model {name}: {problem}"
         return None
 
     # -- estimation ------------------------------------------------------------------
@@ -178,6 +180,15 @@ class MeteredClient:
         request_ref = self._blobs.put_text(canonical_json([m.model_dump() for m in messages]))
         est_in = estimate_prompt_tokens(messages)
         base = {"call_id": call_id, "role": role.value, "model": model_name, "purpose": purpose}
+        identity = {
+            "provider": spec.provider,
+            "model_id": spec.model_id,
+            "model_version": spec.version,
+            "deployment": spec.deployment,
+            "params": spec.params.model_dump(mode="json") | {"seed": seed},
+            "pricing_key": spec.pricing_key,
+            "pricing_version": self._pricing.version,
+        }
 
         attempts: list[AttemptRecord] = []
         start_ns = self._clock.monotonic_ns()
@@ -232,9 +243,11 @@ class MeteredClient:
             self._sink.append(
                 EventType.MODEL_CALL,
                 base
+                | identity
                 | {
                     "attempt": attempt,
                     "outcome": attempts[-1].outcome,
+                    # Error kind and HTTP status only: provider messages may echo prompt text.
                     "error_status": getattr(error, "status", None),
                     "latency_s": latency,
                     "input_tokens": usage.input_tokens,
@@ -246,7 +259,13 @@ class MeteredClient:
                         (response and response.content_filtered)
                         or isinstance(error, ModelContentFilterError)
                     ),
-                    "pricing_key": spec.pricing_key,
+                    "filter_categories": list(
+                        response.filter_categories
+                        if response is not None
+                        else getattr(error, "categories", ())
+                    ),
+                    "provider_model": response.provider_model if response else None,
+                    "provider_request_id": response.provider_request_id if response else None,
                     "request_ref": request_ref,
                     "response_ref": response_ref,
                 },
@@ -307,3 +326,35 @@ class MeteredClient:
         # Failed attempt: charge the prompt if the provider may have processed it.
         billable = error.input_billable
         return Usage(input_tokens=est_in if billable else 0, output_tokens=0, estimated=billable)
+
+
+class ScopedClient:
+    """A MeteredClient restricted to one role and one model.
+
+    Handed to policies (attacker role) and model-backed evaluators (evaluator role) so they
+    can make calls without touching the ledger, other roles, or other models. Calls draw
+    from the reservation supplied by the orchestrator.
+    """
+
+    def __init__(
+        self,
+        client: MeteredClient,
+        role: Role,
+        model_name: str,
+        *,
+        seed: int | None = None,
+        within: Callable[[], Reservation | None] = lambda: None,
+    ) -> None:
+        self._client = client
+        self.role = role
+        self.model_name = model_name
+        self._seed = seed
+        self._within = within
+
+    def call(self, messages: Sequence[ChatMessage], *, purpose: str) -> MeteredResponse:
+        return self._client.call(
+            self.role, self.model_name, messages, purpose=purpose, seed=self._seed, within=self._within()
+        )
+
+    def estimate(self, messages: Sequence[ChatMessage]) -> Amount:
+        return self._client.estimate_messages(self.model_name, messages)

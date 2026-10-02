@@ -36,6 +36,13 @@ class ModelServerError(ModelError):
     input_billable = True
 
 
+class ModelConnectionError(ModelServerError):
+    """The request never reached the provider (DNS, connect, TLS). Retryable, not billable."""
+
+    kind = "connection_error"
+    input_billable = False
+
+
 class ModelBadRequestError(ModelError):
     kind = "bad_request"
 
