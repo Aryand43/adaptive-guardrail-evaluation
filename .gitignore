@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Run outputs and blob stores (may contain sensitive model text)
+runs/
+# Externally supplied curated objectives and prompt templates — never commit
+datasets/external/
+attacks/templates/external/
+.env
