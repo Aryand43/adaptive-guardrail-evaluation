@@ -124,8 +124,8 @@ def test_final_mode_refuses_missing_hashes_unsealed_split_and_unknown_pricing(tm
     unpriced = ModelEntry(
         role="attacker",
         name="new-model",
-        spec=ModelSpec(provider="foundry", model_id="x", version="1", params=SamplingParams(max_tokens=8)),
-        adapter="foundry",
+        spec=ModelSpec(provider="openrouter", model_id="x", version="1", params=SamplingParams(max_tokens=8)),
+        adapter="openrouter",
     )
     bad = base.model_copy(
         update={

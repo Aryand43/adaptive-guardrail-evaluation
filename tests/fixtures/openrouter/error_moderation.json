@@ -1,0 +1,3 @@
+{"status": 403, "headers": {},
+ "body": {"error": {"code": 403, "message": "SANITIZED: input flagged (original message echoed request text).",
+  "metadata": {"reasons": ["violence", "harassment"], "flagged_input": "SANITIZED: echoed prompt", "provider_name": "OpenAI", "model_slug": "openai/gpt-6-luna"}}}}

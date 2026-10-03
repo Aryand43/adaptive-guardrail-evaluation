@@ -1,0 +1,4 @@
+{"status": 200, "headers": {},
+ "body": {"id": "gen-SANITIZED0005", "model": "anthropic/claude-haiku-4.5",
+  "choices": [{"index": 0, "finish_reason": "error", "message": {"role": "assistant", "content": ""},
+    "error": {"code": 502, "message": "SANITIZED: upstream provider failed."}}]}}

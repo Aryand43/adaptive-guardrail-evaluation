@@ -116,6 +116,7 @@ class _EpisodeRun:
         self.turn_res: Reservation | None = None
         self.state = EpisodeState(episode_id=spec.episode_id, objective_id=spec.objective.objective_id)
         self.texts: list[tuple[str, str]] = []  # (attacker message, visible target reply) per turn
+        self.backtracked: set[int] = set()  # turns removed from the target's context by the policy
 
     def _scoped(self, role: Role, model: str | None) -> ScopedClient | None:
         if model is None:
@@ -277,12 +278,19 @@ class _EpisodeRun:
 
         message_ref = self.o.blobs.put_text(action.message)
         note_ref = self.o.blobs.put_text(action.note) if action.note else None
+        if action.backtrack and self.state.turns_completed:
+            self.backtracked.add(self.state.turns_completed)
         self.ledger.record_turn()
-        self.sink.append(EventType.ATTACKER_ACTION, {"turn": turn, "message_ref": message_ref, "note_ref": note_ref})
+        self.sink.append(
+            EventType.ATTACKER_ACTION,
+            {"turn": turn, "message_ref": message_ref, "note_ref": note_ref}
+            | ({"backtrack_turn": self.state.turns_completed} if action.backtrack and self.state.turns_completed else {}),
+        )
 
         convo: list[ChatMessage] = []
-        for a, r in self.texts:
-            if r:  # blocked turns never reached the target model's context
+        for i, (a, r) in enumerate(self.texts, start=1):
+            # Blocked turns never reached the target model's context; backtracked turns were removed.
+            if r and i not in self.backtracked:
                 convo += [ChatMessage(role="user", content=a), ChatMessage(role="assistant", content=r)]
         convo.append(ChatMessage(role="user", content=action.message))
         reply, decisions = self.target.respond(

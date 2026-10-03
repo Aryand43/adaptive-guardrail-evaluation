@@ -1,0 +1,3 @@
+{"status": 200, "headers": {"x-request-id": "req-SANITIZED0003"},
+ "body": {"model": "qwen/qwen3.8-flash",
+  "choices": [{"index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content": "PLACEHOLDER reply without usage block."}}]}}

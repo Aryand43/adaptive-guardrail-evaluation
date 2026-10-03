@@ -1,3 +1,0 @@
-{"status": 400, "headers": {},
- "body": {"error": {"message": "SANITIZED: the prompt was filtered (original message echoed request text).", "type": null, "param": "prompt", "code": "content_filter", "status": 400,
-  "innererror": {"code": "ResponsibleAIPolicyViolation", "content_filter_result": {"hate": {"filtered": false, "severity": "safe"}, "jailbreak": {"filtered": true, "detected": true}, "self_harm": {"filtered": true, "severity": "medium"}}}}}}

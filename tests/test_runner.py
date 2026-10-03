@@ -182,3 +182,15 @@ def test_end_to_end_with_network_disabled(tmp_path, monkeypatch):
     manifest = Runner(prepare(MVP), tmp_path / "offline").run("offline")
     assert manifest.manifest_hash and len(manifest.episodes) == 64
     assert build_dashboard(tmp_path / "offline").is_file()
+
+
+def test_unconfigured_adapter_fails_before_manifest_is_created(tmp_path):
+    from experiments.runner import Runner, prepare
+    from models.errors import UnknownModelError
+    from tests.conftest import ROOT
+
+    prepared = prepare(ROOT / "configs/experiments/mvp_mock.yaml")
+    runner = Runner(prepared, tmp_path / "r", adapter_factory=lambda clock: {})
+    with pytest.raises(UnknownModelError, match="no adapter for provider 'mock'"):
+        runner.run("r")
+    assert not runner.store.path.exists()  # no manifest, so nothing to resume or clean up

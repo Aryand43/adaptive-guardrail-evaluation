@@ -1,13 +1,13 @@
 # adaptive-guardrail-evaluation
 
 Controlled evaluation of autonomous adaptive multi-turn attacks against LLM safety mechanisms,
-under matched turn, query, token, latency and cost budgets. Microsoft Foundry is the production
+under matched turn, query, token, latency and cost budgets. OpenRouter is the production
 model layer; a deterministic mock adapter runs the whole system offline.
 
 **Status:** offline MVP complete (placeholder objective → policy → mock target → evaluators →
-orchestrator → budgets → stop rules → sealed log → manifest → metrics → dashboard). Microsoft
-Foundry adapter implemented and tested against sanitized fixtures only; no real provider run has
-been made yet. `PROJECT_SOURCE_OF_TRUTH.md` is the specification; deviations are logged there.
+orchestrator → budgets → stop rules → sealed log → manifest → metrics → dashboard). OpenRouter
+adapter implemented and tested against sanitized fixtures only; no real provider run has been made
+yet. `PROJECT_SOURCE_OF_TRUTH.md` is the specification; deviations are logged there.
 
 ## Ground rules
 
@@ -24,7 +24,7 @@ been made yet. `PROJECT_SOURCE_OF_TRUTH.md` is the specification; deviations are
 |---|---|
 | `configs/` | Experiment config schema, strict YAML loader, config hashing |
 | `datasets/` | Objective loader, split manifests, sealed-test protection |
-| `models/` | Model specs, adapters (Foundry, mock), pricing, budget-aware `MeteredClient` |
+| `models/` | Model specs, adapters (OpenRouter, mock), pricing, budget-aware `MeteredClient` |
 | `attacks/` | `AttackPolicy` implementations (templates loaded from external files) |
 | `orchestrator/` | Episode loop, state transitions, budget enforcement, stop rules |
 | `evaluators/` | Harm scorer (ground truth), refusal + progress scorers (attacker feedback) |
@@ -73,19 +73,21 @@ rec = create_unseal_record("path/to/manifest.json", unsealed_by="name", reason="
 
 then `--unseal-record unseal.json`.
 
-## Microsoft Foundry
+## Real models (OpenRouter)
 
-Set `provider: foundry` on a model and configure its endpoint through environment variables only
-(named by the model's `endpoint_ref`, default `FOUNDRY`):
+Set `provider: openrouter` on a model, with `model_id` an OpenRouter slug (e.g. `openai/gpt-6-luna`)
+and `version` its canonical dated slug. Configure credentials through environment variables only
+(named by the model's `endpoint_ref`, default `OPENROUTER`):
 
 | Variable | Meaning |
 |---|---|
-| `FOUNDRY_ENDPOINT` | `https://<resource>.services.ai.azure.com` (HTTPS required) |
-| `FOUNDRY_API_KEY` or `FOUNDRY_BEARER_TOKEN` | Credential (never logged) |
-| `FOUNDRY_ROUTE` | `openai_v1` (default), `azure_openai`, or `model_inference` |
-| `FOUNDRY_API_VERSION` | Required for `azure_openai` and `model_inference` |
-| `FOUNDRY_TOKEN_PARAM` | `max_tokens` (default) or `max_completion_tokens` |
+| `OPENROUTER_API_KEY` | Credential (never logged) |
+| `OPENROUTER_BASE_URL` | Optional, default `https://openrouter.ai/api/v1` (HTTPS required) |
 
-Every Foundry model must be priced: copy `configs/pricing/foundry.TEMPLATE.yaml`, fill in current
-prices for the exact deployments, and point `pricing.path` at it. Unpriced or unconfigured models
-fail preflight before any call is made.
+Every model must be priced in the table that `pricing.path` points at
+(`configs/pricing/openrouter.yaml`). Unpriced or unconfigured models fail preflight before any call
+is made. The upstream host that served each call is logged as `upstream_provider`.
+
+```bash
+uv run python -m experiments.run configs/experiments/openrouter_light_dev.yaml
+```

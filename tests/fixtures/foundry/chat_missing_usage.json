@@ -1,3 +1,0 @@
-{"status": 200, "headers": {"x-request-id": "00000000-0000-0000-0000-000000000003"},
- "body": {"object": "chat.completion", "model": "Mistral-small-2503",
-  "choices": [{"index": 0, "finish_reason": "stop", "message": {"role": "assistant", "content": "PLACEHOLDER reply without usage block."}}]}}

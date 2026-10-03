@@ -90,7 +90,7 @@ def test_unknown_or_unpriced_models_fail_closed_before_any_call(make):
     unpriced = MODELS | {"x": ModelSpec(provider="mock", model_id="unpriced", version="1", params=SamplingParams(max_tokens=8))}
     with pytest.raises(UnknownModelError, match="no pricing"):
         make(models=unpriced)
-    no_adapter = MODELS | {"y": ModelSpec(provider="foundry", model_id="mock-target", version="1", params=SamplingParams(max_tokens=8))}
+    no_adapter = MODELS | {"y": ModelSpec(provider="openrouter", model_id="mock-target", version="1", params=SamplingParams(max_tokens=8))}
     with pytest.raises(UnknownModelError, match="no adapter"):
         make(models=no_adapter)
     c = make()

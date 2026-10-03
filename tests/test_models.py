@@ -143,8 +143,8 @@ def test_pricing_rounds_up_per_call():
 def test_unknown_model_fails_closed():
     t = load_pricing(MOCK_PRICING)
     with pytest.raises(UnknownModelPricingError):
-        t.cost_nano("foundry:unpriced:1", 1, 1)
-    assert not t.has("foundry:unpriced:1")
+        t.cost_nano("openrouter:unpriced:1", 1, 1)
+    assert not t.has("openrouter:unpriced:1")
 
 
 def test_pricing_rejects_float_prices_and_wrong_currency():
@@ -160,6 +160,3 @@ def test_pricing_hash_is_stable_and_content_sensitive():
     b = a.model_copy(update={"version": "other"})
     assert a.table_hash != b.table_hash
 
-
-def test_foundry_template_has_no_prices():
-    assert load_pricing(ROOT / "configs/pricing/foundry.TEMPLATE.yaml").models == {}

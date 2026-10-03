@@ -11,7 +11,7 @@ from models.types import ModelRequest, ModelResponse, ModelSpec
 
 
 class ModelAdapter(ABC):
-    #: Stable identifier recorded in manifests (e.g. "mock", "foundry").
+    #: Stable identifier recorded in manifests (e.g. "mock", "openrouter").
     adapter_id: str
 
     @abstractmethod

@@ -268,7 +268,10 @@ class MeteredClient:
                     "provider_request_id": response.provider_request_id if response else None,
                     "request_ref": request_ref,
                     "response_ref": response_ref,
-                },
+                }
+                # Which upstream host served a routed call (OpenRouter); absent for direct providers.
+                | ({"upstream_provider": response.upstream_provider}
+                   if response is not None and response.upstream_provider else {}),
             )
             self._sink.append(
                 EventType.BUDGET_RECONCILE,

@@ -5,8 +5,9 @@ from pathlib import Path
 
 from attacks.attacker_llm import AttackerLLMPolicy
 from attacks.base import AttackPolicy
+from attacks.crescendo import CrescendoPolicy
 from attacks.fixed_escalation import FixedEscalationPolicy
-from attacks.template_loader import AttackerPromptTemplate, LadderTemplate, load_template
+from attacks.template_loader import AttackerPromptTemplate, CrescendoTemplate, LadderTemplate, load_template
 from configs.schema import PolicyConfig
 from storage.hashing import hash_obj
 
@@ -34,6 +35,7 @@ class PolicyFactory:
 _POLICIES = {
     "fixed_escalation": ("ladder", LadderTemplate, FixedEscalationPolicy),
     "attacker_llm": ("prompt", AttackerPromptTemplate, AttackerLLMPolicy),
+    "crescendo": ("prompt", CrescendoTemplate, CrescendoPolicy),
 }
 
 

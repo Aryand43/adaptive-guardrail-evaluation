@@ -49,6 +49,9 @@ class AttackAction(Frozen):
 
     message: str | None
     stop: bool = False
+    # Remove the previous exchange from the target's context before sending `message` (Crescendo
+    # backtracking). The removed turn still counts against every budget and stays in the log.
+    backtrack: bool = False
     note: str | None = Field(default=None, max_length=2000)  # optional rationale; stored as a blob
 
 

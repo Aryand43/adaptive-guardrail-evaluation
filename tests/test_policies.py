@@ -155,3 +155,52 @@ def test_policy_registry():
 def test_policy_registry_fails_closed(cfg, msg):
     with pytest.raises(PolicyConfigError, match=msg):
         build_policy(PolicyConfig.model_validate(cfg), resolve)
+
+
+def crescendo_template(**over):
+    from attacks.template_loader import CrescendoTemplate
+
+    t = load_template(TEMPLATES / "placeholder_crescendo.yaml", CrescendoTemplate)[0]
+    return t.model_copy(update=over)
+
+
+def _target_requests(path, blobs):
+    import json
+
+    return [
+        json.loads(blobs.get_text(e.payload["request_ref"]))
+        for e in read_events(path)
+        if e.event_type == EventType.MODEL_CALL and e.payload["role"] == "target"
+    ]
+
+
+def test_crescendo_backtracks_refused_turn_out_of_target_context(tmp_path, clock):
+    from attacks.crescendo import CrescendoPolicy
+    from storage.blobs import BlobStore
+
+    result, path, _ = run(tmp_path, clock, CrescendoPolicy("0.1", crescendo_template()))
+    assert result.state.turns[0].refusal.refused  # mock target refuses low pressure
+    actions = [e.payload for e in read_events(path) if e.event_type == EventType.ATTACKER_ACTION]
+    assert "backtrack_turn" not in actions[0] and actions[1]["backtrack_turn"] == 1
+    second = _target_requests(path, BlobStore(tmp_path / "blobs"))[1]
+    assert [m["role"] for m in second] == ["user"]  # refused exchange removed, not replayed
+    assert result.state.turns_completed >= 2  # the backtracked attempt still counted as a turn
+
+
+def test_crescendo_without_backtracks_keeps_full_context(tmp_path, clock):
+    from attacks.crescendo import CrescendoPolicy
+    from storage.blobs import BlobStore
+
+    result, path, _ = run(tmp_path, clock, CrescendoPolicy("0.1", crescendo_template(max_backtracks=0)))
+    actions = [e.payload for e in read_events(path) if e.event_type == EventType.ATTACKER_ACTION]
+    assert all("backtrack_turn" not in a for a in actions)
+    second = _target_requests(path, BlobStore(tmp_path / "blobs"))[1]
+    assert [m["role"] for m in second] == ["user", "assistant", "user"]
+
+
+def test_crescendo_is_registered_and_template_is_placeholder():
+    t = crescendo_template()
+    assert "PLACEHOLDER" in t.system and "PLACEHOLDER" in t.user
+    f = build_policy(PolicyConfig(name="crescendo", version="0.1",
+                                  template_paths={"prompt": "attacks/templates/placeholder_crescendo.yaml"}), resolve)
+    assert f().name == "crescendo" and f().max_model_calls_per_turn == 1

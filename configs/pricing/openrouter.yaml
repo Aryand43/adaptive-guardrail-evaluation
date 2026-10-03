@@ -1,0 +1,14 @@
+# OpenRouter list prices, read from https://openrouter.ai/api/v1/models on 2026-10-03.
+# USD per 1M tokens, quoted strings. Keys are "openrouter:<slug>:<canonical slug>". Re-check before
+# final runs: OpenRouter prices can change, and any model missing here fails preflight.
+schema_version: "1.0"
+version: "openrouter-2026-10-03"
+effective_date: "2026-10-03"
+currency: USD
+models:
+  "openrouter:deepseek/deepseek-v4-flash:deepseek/deepseek-v4-flash-20260423": {input_per_mtok: "0.028", output_per_mtok: "0.056"}
+  "openrouter:openai/gpt-6-luna:openai/gpt-6-luna-20260922": {input_per_mtok: "0.10", output_per_mtok: "0.50"}
+  "openrouter:anthropic/claude-haiku-4.5:anthropic/claude-4.5-haiku-20251001": {input_per_mtok: "1.00", output_per_mtok: "5.00"}
+  "openrouter:google/gemini-3.1-flash-lite:google/gemini-3.1-flash-lite-20260507": {input_per_mtok: "0.25", output_per_mtok: "1.50"}
+  "openrouter:meta-llama/llama-4-scout:meta-llama/llama-4-scout-17b-16e-instruct": {input_per_mtok: "0.10", output_per_mtok: "0.30"}
+  "openrouter:qwen/qwen3.8-flash:qwen/qwen3.8-flash-20260826": {input_per_mtok: "0.15", output_per_mtok: "0.47"}

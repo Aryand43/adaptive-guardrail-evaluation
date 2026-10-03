@@ -28,10 +28,10 @@ class SamplingParams(Frozen):
 class ModelSpec(Frozen):
     """Exact model identity. Changing any field is a different model for accounting and results."""
 
-    provider: str = Field(min_length=1)  # e.g. "mock", "foundry"
+    provider: str = Field(min_length=1)  # e.g. "mock", "openrouter"
     model_id: str = Field(min_length=1)
     version: str = Field(min_length=1)
-    deployment: str | None = None  # Foundry deployment name, if different from model_id
+    deployment: str | None = None  # provider-side model name, if different from model_id
     endpoint_ref: str | None = None  # name of an endpoint entry / env var; never a secret
     params: SamplingParams
 
@@ -79,6 +79,7 @@ class ModelResponse(Frozen):
     usage: Usage | None
     provider_model: str | None = None
     provider_request_id: str | None = None
-    # Provider-side content filtering on the output (Foundry `content_filter` finish reason).
+    upstream_provider: str | None = None  # host that served a routed call, e.g. via OpenRouter
+    # Provider-side content filtering on the output (`content_filter` finish reason).
     content_filtered: bool = False
     filter_categories: tuple[str, ...] = ()

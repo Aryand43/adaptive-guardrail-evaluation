@@ -1,0 +1,4 @@
+{"status": 200, "headers": {},
+ "body": {"id": "gen-SANITIZED0004", "model": "google/gemini-3.1-flash-lite", "provider": "Google",
+  "choices": [{"index": 0, "finish_reason": "content_filter", "native_finish_reason": "SAFETY", "message": {"role": "assistant", "content": null}}],
+  "usage": {"prompt_tokens": 30, "completion_tokens": 0, "total_tokens": 30}}}

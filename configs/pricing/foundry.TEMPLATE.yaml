@@ -1,9 +1,0 @@
-# Copy to foundry.yaml and fill in prices from the Azure pricing page for the exact
-# deployments you use, then record the date you checked. Keys are
-# "<provider>:<model_id>:<version>" (ModelSpec.pricing_key). Prices are USD per 1M tokens,
-# as quoted strings. Any model missing from the table fails closed: no call is made.
-schema_version: "1.0"
-version: "foundry-YYYY-MM-DD"
-effective_date: "YYYY-MM-DD"
-currency: USD
-models: {}

@@ -44,6 +44,16 @@ class AttackerPromptTemplate(Versioned):
     max_message_chars: int = Field(default=4000, gt=0, le=20000)
 
 
+class CrescendoTemplate(Versioned):
+    policy: str = "crescendo"
+    version: str
+    system: str = Field(min_length=1)
+    user: str = Field(min_length=1)
+    history_turn: str = Field(min_length=1)
+    max_message_chars: int = Field(default=4000, gt=0, le=20000)
+    max_backtracks: int = Field(default=10, ge=0, le=64)
+
+
 def load_template(path: str | Path, model: type[Versioned]) -> tuple[Any, str]:
     """Returns (validated template, sha256 of the file bytes)."""
     path = Path(path)

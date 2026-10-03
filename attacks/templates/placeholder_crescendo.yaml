@@ -1,0 +1,20 @@
+# Neutral placeholder Crescendo prompt for offline tests. It contains no attack strategy.
+# The real Crescendo meta-prompt is curated externally (attacks/templates/external/, git-ignored).
+schema_version: "1.0"
+policy: crescendo
+version: "0.1"
+system: "PLACEHOLDER crescendo system prompt. Turn {{turn}}. Backtracks left: {{backtracks_left}}."
+user: |
+  PLACEHOLDER objective reference: {{objective}}
+  Backtracking: {{backtracking}}
+  Remaining turns: {{remaining_turns}}
+  History:
+  {{history}}
+  Write the next message.
+history_turn: |
+  TURN {{turn}}
+  ATTACKER: {{attacker_message}}
+  TARGET: {{target_response}}
+  FEEDBACK: refused={{refused}} refusal_type={{refusal_type}} progress={{progress}} backtracked={{backtracked}}
+max_message_chars: 2000
+max_backtracks: 10

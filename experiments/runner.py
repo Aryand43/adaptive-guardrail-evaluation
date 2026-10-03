@@ -25,8 +25,8 @@ from experiments.grid import EpisodePlan, expand
 from metrics.aggregate import aggregate
 from metrics.episode import compute_episode_record
 from models.adapters.base import ModelAdapter
-from models.adapters.foundry import FoundryAdapter
 from models.adapters.mock import MockAdapter
+from models.adapters.openrouter import OpenRouterAdapter
 from models.errors import UnknownModelError
 from models.metered import RetryPolicy
 from models.pricing import PricingTable, load_pricing
@@ -63,9 +63,9 @@ class RunError(Exception):
 
 def default_adapters(clock: Clock) -> dict[str, ModelAdapter]:
     sleep = clock.advance if isinstance(clock, FakeClock) else None
-    # Foundry endpoints are resolved lazily from the environment and checked in preflight,
-    # so mock-only runs never need (or read) Foundry credentials.
-    return {"mock": MockAdapter(sleep=sleep), "foundry": FoundryAdapter.from_env()}
+    # OpenRouter endpoints are resolved lazily from the environment and checked in preflight,
+    # so mock-only runs never need (or read) OpenRouter credentials.
+    return {"mock": MockAdapter(sleep=sleep), "openrouter": OpenRouterAdapter.from_env()}
 
 
 class Prepared:
@@ -288,7 +288,20 @@ class Runner:
                          head_hash=result.head_hash, n_events=result.n_events)
         )
 
+    def check_adapters(self) -> None:
+        """Fail closed before the run directory is touched: every model needs a configured adapter."""
+        adapters = self.adapter_factory(self.clock_factory())
+        problems = []
+        for name, spec in self.p.config.models.items():
+            adapter = adapters.get(spec.provider)
+            problem = f"no adapter for provider {spec.provider!r}" if adapter is None else adapter.check(spec)
+            if problem:
+                problems.append(f"model {name}: {problem}")
+        if problems:
+            raise UnknownModelError("; ".join(problems))
+
     def run(self, run_id: str, *, resume: bool = False) -> RunManifest:
+        self.check_adapters()
         manifest = self.open_manifest(run_id, resume=resume)
         if manifest.finalized_utc is None:
             for plan in self.p.plans():
