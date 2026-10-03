@@ -93,3 +93,11 @@ def test_dashboard_refuses_tampered_run(built, tmp_path):
     ep.write_text("\n".join(lines) + "\n")
     with pytest.raises(IntegrityError):
         build_dashboard(copy)
+
+
+def test_mock_run_is_flagged_as_simulated(built):
+    _, path = built
+    page = path.read_text()
+    assert "Simulated run." in page
+    assert "Real provider run." not in page
+    assert "Ground truth (hidden from attacker)" in page

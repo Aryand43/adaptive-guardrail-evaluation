@@ -16,6 +16,8 @@ from metrics.episode import EpisodeRecord, compute_episode_record
 from storage.manifest import ManifestStore, RunManifest
 
 PALETTE = ["#2f6fdb", "#d9822b", "#2a9d6f", "#c2457a", "#7a5cd6", "#8a8f2a", "#c43b3b", "#3b9bc4"]
+CHANNEL_ROLES = {"harm": "Ground truth (hidden from attacker)", "refusal": "Feedback (visible to attacker)",
+                 "progress": "Feedback (visible to attacker)"}
 RESOURCE_LABELS = {"turns": "Turns", "queries": "Queries", "tokens": "Tokens", "cost_usd": "Cost (USD)", "wall_s": "Wall time (s)"}
 
 CSS = """
@@ -32,6 +34,7 @@ th{color:var(--muted);font-weight:600}td.n{text-align:right;font-variant-numeric
 svg text{fill:var(--muted);font-size:11px}svg .axis{stroke:var(--line)}.legend span{display:inline-block;margin-right:14px;font-size:12px}
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .banner{border-left:3px solid var(--accent);padding:8px 12px;background:var(--card);margin:12px 0;font-size:13px}
+.banner.warn{border-left-color:#d9822b}
 """
 
 
@@ -142,8 +145,19 @@ def render(manifest: RunManifest, records: list[EpisodeRecord], report: Aggregat
           x.spec.params.max_tokens, x.spec.params.temperature] for x in m.models],
         {6, 7},
     )
-    evals = _table(["Channel", "Impl", "Version", "Model", "Rubric"],
-                   [[x.channel, x.impl, x.version, x.model or "–", x.rubric_id or "–"] for x in m.evaluators], set())
+    evals = _table(["Channel", "Role", "Impl", "Version", "Model", "Rubric"],
+                   [[x.channel, CHANNEL_ROLES.get(x.channel, "–"), x.impl, x.version, x.model or "–", x.rubric_id or "–"]
+                    for x in m.evaluators], set())
+    mock_models = sorted(x.name for x in m.models if x.spec.provider == "mock")
+    mock_evals = sorted(x.channel for x in m.evaluators if x.impl == "mock")
+    if mock_models or mock_evals:
+        source = ('<div class="banner warn"><strong>Simulated run.</strong> Mock components were used '
+                  f'(models: {e(", ".join(mock_models) or "none")}; evaluators: {e(", ".join(mock_evals) or "none")}). '
+                  "These numbers test the pipeline and say nothing about real model behaviour.</div>")
+    else:
+        providers = ", ".join(sorted({x.spec.provider for x in m.models}))
+        source = f'<div class="banner"><strong>Real provider run.</strong> All models called through: {e(providers)}.</div>'
+
     budgets = _table(["#", "Turns", "Queries", "Tokens", "Cost (USD)", "Wall (s)"],
                      [[i, b.turns, b.queries, b.tokens, b.cost_usd, b.wall_s] for i, b in enumerate(m.budgets)],
                      {1, 2, 3, 4, 5})
@@ -194,6 +208,7 @@ def render(manifest: RunManifest, records: list[EpisodeRecord], report: Aggregat
 <body><main>
 <h1>Guardrail evaluation run</h1>
 <div class="muted">{e(m.run_id)} · {e(m.mode)} mode · {report.n_episodes} episodes</div>
+{source}
 <div class="banner">Derived, read-only view. Recomputed from the sealed event chains of this run; contains no
 model text, objective text, or blob references.</div>
 <h2>Provenance</h2><div class="grid"><div class="card">{header}</div><div class="card">{data}</div></div>
